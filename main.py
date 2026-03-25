@@ -627,6 +627,7 @@ if __name__ == "__main__":
     import uvicorn
     # Use environment variables from .env file
     port = int(os.getenv('PORT', 5555))
-    host = os.getenv('HOST', '127.0.0.1')
+    # For Render deployment, bind to 0.0.0.0 instead of localhost
+    host = os.getenv('HOST', '0.0.0.0')
     print(f"Starting server on {host}:{port}")
     uvicorn.run(app, host=host, port=port)

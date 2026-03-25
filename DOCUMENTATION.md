@@ -719,7 +719,7 @@ export GROQ_API_KEY="your-key"
 python main.py
 
 # Access UI
-open http://localhost:5552
+open http://localhost:5554
 ```
 
 ### Docker Deployment
@@ -733,7 +733,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-EXPOSE 5552
+EXPOSE 5554
 
 CMD ["python", "main.py"]
 ```
@@ -741,7 +741,7 @@ CMD ["python", "main.py"]
 Build and run:
 ```bash
 docker build -t o2c-system .
-docker run -p 5552:5552 -e GROQ_API_KEY=$GROQ_API_KEY o2c-system
+docker run -p 5554:5554 -e GROQ_API_KEY=$GROQ_API_KEY o2c-system
 ```
 
 ### Kubernetes Deployment
@@ -768,7 +768,7 @@ spec:
       - name: o2c-system
         image: o2c-system:latest
         ports:
-        - containerPort: 5552
+        - containerPort: 5554
         env:
         - name: GROQ_API_KEY
           valueFrom:
@@ -792,7 +792,7 @@ spec:
 - [ ] GROQ_API_KEY set securely
 - [ ] DATA_PATH points to stable location
 - [ ] Logs configured (LOG_LEVEL=INFO)
-- [ ] Port 5552 open in firewall
+- [ ] Port 5554 open in firewall
 - [ ] CORS properly configured for frontend domain
 - [ ] Database performs well with your dataset size
 - [ ] Monitor LLM API costs
@@ -817,7 +817,7 @@ spec:
 **Q: "GROQ_API_KEY environment variable not set"**
 A: Set it before running: `export GROQ_API_KEY="your-key"`
 
-**Q: "Port 5552 already in use"**
+**Q: "Port 5554 already in use"**
 A: Change port in .env file, or kill existing process
 
 **Q: "Data loading is slow"**

@@ -94,6 +94,8 @@ class ChatResponse(BaseModel):
     response: str
     referenced_nodes: List[str]
     query_type: str
+    structured_response: Optional[Dict[str, Any]] = None  # New: structured format for frontend
+    referenced_entities: Optional[Dict[str, Any]] = None  # New: full entity details with relationships
 
 # ============================================================================
 # DATA LOADING
@@ -423,7 +425,8 @@ async def chat(request: ChatRequest):
     # Import LLM utilities
     from llm_utils import (
         generate_sql_from_query, execute_query_safely, synthesize_response,
-        is_query_in_scope, detect_query_requires_graph, traverse_graph_for_multihop_query
+        is_query_in_scope, detect_query_requires_graph, traverse_graph_for_multihop_query,
+        create_structured_response, fetch_entity_details_with_relationships
     )
     
     try:
@@ -445,7 +448,7 @@ async def chat(request: ChatRequest):
             )
             
             if graph_results is not None and len(graph_results) > 0:
-                # Synthesize graph results
+                # Synthesize graph results with structured format
                 response_text, referenced_nodes = await synthesize_response(
                     user_query,
                     graph_method,
@@ -453,10 +456,26 @@ async def chat(request: ChatRequest):
                     global_state.graph
                 )
                 
+                # Also create structured version
+                structured_resp = await create_structured_response(
+                    user_query,
+                    graph_method,
+                    graph_results,
+                    global_state.graph
+                )
+                
+                # Fetch full entity details with relationships
+                entity_details = await fetch_entity_details_with_relationships(
+                    referenced_nodes,
+                    global_state.graph
+                )
+                
                 return ChatResponse(
                     response=response_text,
                     referenced_nodes=referenced_nodes,
-                    query_type="graph_traversal"
+                    query_type="graph_traversal",
+                    structured_response=structured_resp,
+                    referenced_entities=entity_details
                 )
         
         # Step 3: Try SQL-based query generation
@@ -484,10 +503,26 @@ async def chat(request: ChatRequest):
                 global_state.graph
             )
             
+            # Create structured response
+            structured_resp = await create_structured_response(
+                user_query,
+                sql_query,
+                results,
+                global_state.graph
+            )
+            
+            # Fetch full entity details with relationships
+            entity_details = await fetch_entity_details_with_relationships(
+                referenced_nodes,
+                global_state.graph
+            )
+            
             return ChatResponse(
                 response=response_text,
                 referenced_nodes=referenced_nodes,
-                query_type="sql"
+                query_type="sql",
+                structured_response=structured_resp,
+                referenced_entities=entity_details
             )
         
         except Exception as sql_error:
@@ -511,10 +546,26 @@ async def chat(request: ChatRequest):
                         global_state.graph
                     )
                     
+                    # Create structured response
+                    structured_resp = await create_structured_response(
+                        user_query,
+                        f"Graph Analysis via: {graph_method}",
+                        graph_results,
+                        global_state.graph
+                    )
+                    
+                    # Fetch full entity details with relationships
+                    entity_details = await fetch_entity_details_with_relationships(
+                        referenced_nodes,
+                        global_state.graph
+                    )
+                    
                     return ChatResponse(
                         response=response_text,
                         referenced_nodes=referenced_nodes,
-                        query_type="graph_fallback"
+                        query_type="graph_fallback",
+                        structured_response=structured_resp,
+                        referenced_entities=entity_details
                     )
             
             # If graph fallback also fails, return user-friendly error instead of 500

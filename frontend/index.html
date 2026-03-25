@@ -308,6 +308,383 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Structured Response Styling */
+        .response-structured {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .response-header {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 4px;
+        }
+
+        .response-section {
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(102, 126, 234, 0.05);
+            border-left: 3px solid #667eea;
+            border-radius: 3px;
+        }
+
+        .response-section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .response-item {
+            margin: 6px 0;
+            padding-left: 16px;
+        }
+
+        .response-item::before {
+            content: "→ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-left: -12px;
+            margin-right: 4px;
+        }
+
+        .response-metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .response-metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            color: #667eea;
+            text-align: right;
+        }
+
+        .response-confidence {
+            font-size: 11px;
+            color: #999;
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .entity-detail {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        .entity-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .entity-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .entity-label {
+            font-weight: 600;
+            color: #666;
+            min-width: 100px;
+        }
+
+        .entity-value {
+            color: #333;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        /* Full Entity Details Panel Styles */
+        .referenced-entities-panel {
+            background: #f5f5f5;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 12px 0;
+        }
+
+        .referenced-entities-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .entity-card {
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .entity-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .entity-card-title {
+            font-weight: 700;
+            color: #333;
+            font-size: 13px;
+        }
+
+        .entity-card-type {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .entity-properties {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .entity-properties {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .property-row {
+            display: flex;
+            flex-direction: column;
+            padding: 6px;
+            background: #fafafa;
+            border-radius: 4px;
+            border-left: 2px solid #ddd;
+        }
+
+        .property-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .property-value {
+            font-size: 12px;
+            color: #333;
+            word-break: break-word;
+        }
+
+        .entity-relationships-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .relationships-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .relationships-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .relationship-badge {
+            background: #e8eef8;
+            border: 1px solid #667eea;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .relationship-badge.inbound {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+
+        .relationship-badge.outbound {
+            background: #fff0f4;
+            border-color: #ff6b6b;
+        }
+
+        .relationship-arrow {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .relationship-type {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .relationship-target {
+            color: #666;
+        }
+
+        /* Entity Details Panel - Graph Node Inspection */
+        .entity-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .entity-details-modal.show {
+            display: flex;
+        }
+
+        .entity-details-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .entity-details-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .entity-details-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .entity-details-type {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .entity-details-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .entity-details-close:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .entity-field {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .entity-field:last-child {
+            border-bottom: none;
+        }
+
+        .entity-field-name {
+            font-weight: 600;
+            color: #667eea;
+            word-break: break-word;
+        }
+
+        .entity-field-value {
+            color: #333;
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        .entity-field-value.empty {
+            color: #999;
+            font-style: italic;
+        }
+
+        .entity-connections {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .entity-connections-title {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .entity-connections-badge {
+            background: #e8eef8;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #333;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -351,6 +728,14 @@
     </div>
 
     <div class="tooltip" id="tooltip" style="display: none;"></div>
+
+    <!-- Entity Details Modal -->
+    <div class="entity-details-modal" id="entityDetailsModal">
+        <div class="entity-details-panel">
+            <button class="entity-details-close" onclick="closeEntityDetails()">&times;</button>
+            <div id="entityDetailsContent"></div>
+        </div>
+    </div>
 
     <script>
         // ============================================================================
@@ -550,29 +935,261 @@
         async function showNodeDetails(nodeId) {
             const [type, id] = nodeId.split(':');
             try {
-                // Could fetch more details here
-                showMessage('System', `Selected: ${nodeId}`, false);
+                // Fetch detailed information from backend
+                const response = await fetch(`${API_BASE}/graph/entity/${type}/${id}`);
+                if (!response.ok) {
+                    throw new Error('Entity not found');
+                }
+
+                const data = await response.json();
+
+                // Build detailed HTML
+                let html = `
+                    <div class="entity-details-header">
+                        <div>
+                            <div class="entity-details-title">${type}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 2px;">Entity: ${type}</div>
+                        </div>
+                        <div class="entity-details-type">${type}</div>
+                    </div>
+                `;
+
+                // Display all attributes
+                html += '<div style="margin: 12px 0;">';
+                if (data.attributes && Object.keys(data.attributes).length > 0) {
+                    Object.entries(data.attributes).forEach(([key, value]) => {
+                        const displayKey = key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                        const displayValue = value === null || value === undefined || value === '' ? '(empty)' : String(value);
+                        const isEmptyClass = displayValue === '(empty)' ? 'empty' : '';
+                        
+                        html += `
+                            <div class="entity-field">
+                                <div class="entity-field-name">${displayKey}:</div>
+                                <div class="entity-field-value ${isEmptyClass}">${displayValue.substring(0, 200)}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<div style="color: #999; font-style: italic;">No attributes available</div>';
+                }
+                html += '</div>';
+
+                // Display connections
+                const predecessors = data.connected_to?.predecessors || [];
+                const successors = data.connected_to?.successors || [];
+
+                if (predecessors && predecessors.length > 0) {
+                    html += `
+                        <div class="entity-connections">
+                            <div class="entity-connections-title">← Incoming Relationships (${predecessors.length})</div>
+                            <div class="entity-connections-badge">From ${predecessors.length} other entities</div>
+                        </div>
+                    `;
+                }
+
+                if (successors && successors.length > 0) {
+                    html += `
+                        <div class="entity-connections">
+                            <div class="entity-connections-title">→ Outgoing Relationships (${successors.length})</div>
+                            <div class="entity-connections-badge">To ${successors.length} other entities</div>
+                        </div>
+                    `;
+                }
+
+                // Display total connections
+                const totalConnections = (predecessors?.length || 0) + (successors?.length || 0);
+                if (totalConnections === 0) {
+                    html += `
+                        <div class="entity-connections">
+                            <div class="entity-connections-title">↔️ Connections</div>
+                            <div class="entity-connections-badge">No connected entities</div>
+                        </div>
+                    `;
+                }
+
+                // Show modal
+                const modal = document.getElementById('entityDetailsModal');
+                const content = document.getElementById('entityDetailsContent');
+                content.innerHTML = html;
+                modal.classList.add('show');
+
             } catch (error) {
                 console.error('Error fetching node details:', error);
+                alert('Could not load entity details: ' + error.message);
             }
+        }
+
+        function closeEntityDetails() {
+            const modal = document.getElementById('entityDetailsModal');
+            modal.classList.remove('show');
+        }
+
+        // Close modal when clicking outside
+        const modalElement = document.getElementById('entityDetailsModal');
+        if (modalElement) {
+            modalElement.addEventListener('click', (e) => {
+                if (e.target.id === 'entityDetailsModal') {
+                    closeEntityDetails();
+                }
+            });
         }
 
         // ============================================================================
         // Chat Interface
         // ============================================================================
 
-        function showMessage(sender, content, isUser = false) {
+        function showMessage(sender, content, isUser = false, structured = false) {
             const messagesDiv = document.getElementById('chatMessages');
             const msgEl = document.createElement('div');
             msgEl.className = `message ${isUser ? 'user' : 'assistant'}`;
 
             const contentEl = document.createElement('div');
             contentEl.className = 'message-content';
-            contentEl.innerHTML = content.replace(/\n/g, '<br>');
+            
+            if (structured && typeof content === 'object') {
+                // Build structured HTML
+                let html = '<div class="response-structured">';
+                
+                // Main answer
+                if (content.answer) {
+                    html += `<div class="response-header">${content.answer}</div>`;
+                }
+                
+                // Data insights section
+                if (content.insights && content.insights.length > 0) {
+                    html += '<div class="response-section">';
+                    html += '<div class="response-section-title">📊 Key Insights:</div>';
+                    content.insights.forEach(insight => {
+                        html += `<div class="response-item">${insight}</div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                // Metrics section
+                if (content.metrics && Object.keys(content.metrics).length > 0) {
+                    html += '<div class="response-section">';
+                    html += '<div class="response-section-title">📈 Metrics:</div>';
+                    Object.entries(content.metrics).forEach(([label, value]) => {
+                        html += `
+                            <div class="response-metric">
+                                <span class="metric-label">${label}</span>
+                                <span class="metric-value">${value}</span>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+                
+                // Data table section
+                if (content.data && content.data.length > 0) {
+                    html += '<div class="response-section">';
+                    html += '<div class="response-section-title">📋 Data:</div>';
+                    content.data.forEach(item => {
+                        html += '<div class="entity-detail">';
+                        Object.entries(item).forEach(([key, value]) => {
+                            html += `
+                                <div class="entity-detail-row">
+                                    <span class="entity-label">${key}:</span>
+                                    <span class="entity-value">${value}</span>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                }
+                
+                // Confidence/source
+                if (content.source) {
+                    html += `<div class="response-confidence">✓ Source: ${content.source}</div>`;
+                }
+                
+                html += '</div>';
+                contentEl.innerHTML = html;
+            } else {
+                // Plain text message
+                contentEl.innerHTML = (typeof content === 'string' ? content : JSON.stringify(content))
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/__(.*?)__/g, '<u>$1</u>');
+            }
 
             msgEl.appendChild(contentEl);
             messagesDiv.appendChild(msgEl);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function renderEntityDetailsPanel(entitiesData) {
+            // Render detailed entity panel with all properties and relationships.
+            if (!entitiesData || !entitiesData.entities || entitiesData.entities.length === 0) {
+                return '';
+            }
+
+            let html = '<div class="referenced-entities-panel">';
+            html += `<div class="referenced-entities-header">🔗 Referenced Entities (${entitiesData.total_entities})</div>`;
+
+            entitiesData.entities.forEach((entity, idx) => {
+                html += '<div class="entity-card">';
+
+                // Entity header with type
+                html += '<div class="entity-card-header">';
+                html += `<div class="entity-card-title">${entity.id}</div>`;
+                html += `<div class="entity-card-type">${entity.type}</div>`;
+                html += '</div>';
+
+                // Entity properties
+                if (Object.keys(entity.properties).length > 0) {
+                    html += '<div class="entity-properties">';
+                    Object.entries(entity.properties).slice(0, 6).forEach(([key, value]) => {
+                        html += `
+                            <div class="property-row">
+                                <div class="property-label">${key.replace(/_/g, ' ')}</div>
+                                <div class="property-value">${value}</div>
+                            </div>
+                        `;
+                    });
+                    if (Object.keys(entity.properties).length > 6) {
+                        html += `<div class="property-row"><div class="property-label" style="color: #999;">+${Object.keys(entity.properties).length - 6} more</div></div>`;
+                    }
+                    html += '</div>';
+                }
+
+                // Relationships section
+                const totalRelationships = entity.inbound_relationships.length + entity.outbound_relationships.length;
+                if (totalRelationships > 0) {
+                    html += '<div class="entity-relationships-section">';
+                    html += `<div class="relationships-title">↔️ Relationships (${totalRelationships})</div>`;
+                    html += '<div class="relationships-list">';
+
+                    // Inbound relationships
+                    entity.inbound_relationships.forEach((rel) => {
+                        html += `
+                            <div class="relationship-badge inbound" title="${rel.source_type}">
+                                <span class="relationship-arrow">←</span>
+                                <span class="relationship-type">${rel.relationship}</span>
+                            </div>
+                        `;
+                    });
+
+                    // Outbound relationships
+                    entity.outbound_relationships.forEach((rel) => {
+                        html += `
+                            <div class="relationship-badge outbound" title="${rel.target_type}">
+                                <span class="relationship-type">${rel.relationship}</span>
+                                <span class="relationship-arrow">→</span>
+                            </div>
+                        `;
+                    });
+
+                    html += '</div>';
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            });
+
+            html += '</div>';
+            return html;
         }
 
         async function sendMessage() {
@@ -604,15 +1221,60 @@
 
                 const data = await response.json();
 
-                // Format response with references
-                let responseText = data.response;
-                if (data.referenced_nodes && data.referenced_nodes.length > 0) {
-                    responseText += '<br><br><strong>Referenced:</strong><br>';
-                    data.referenced_nodes.forEach(node => {
-                        responseText += `<span class="ref-badge">${node}</span>`;
-                    });
+                // Check if response has structured format
+                if (data.structured_response) {
+                    // Use structured response
+                    showMessage('Assistant', data.structured_response, false, true);
 
-                    // Highlight nodes in graph
+                    // Render entity details if available
+                    if (data.referenced_entities && data.referenced_entities.entities) {
+                        const messagesDiv = document.getElementById('chatMessages');
+                        const lastMsg = messagesDiv.lastChild;
+                        const entityPanel = renderEntityDetailsPanel(data.referenced_entities);
+                        if (entityPanel) {
+                            const entityDiv = document.createElement('div');
+                            entityDiv.innerHTML = entityPanel;
+                            lastMsg.appendChild(entityDiv);
+                        }
+                    }
+                } else {
+                    // Fallback to plain text response
+                    let responseText = data.response;
+                    if (data.referenced_nodes && data.referenced_nodes.length > 0) {
+                        responseText += '<br><br><strong>Referenced:</strong><br>';
+                        data.referenced_nodes.forEach(node => {
+                            responseText += `<span class="ref-badge">${node}</span>`;
+                        });
+
+                        // Highlight nodes in graph
+                        data.referenced_nodes.forEach(node => {
+                            try {
+                                if (state.highlightedNodes.size < 10) {
+                                    highlightNode(node);
+                                }
+                            } catch (e) {
+                                // Ignore invalid node IDs
+                            }
+                        });
+                    }
+
+                    showMessage('Assistant', responseText, false);
+
+                    // Also render entity details for plain text responses
+                    if (data.referenced_entities && data.referenced_entities.entities) {
+                        const messagesDiv = document.getElementById('chatMessages');
+                        const lastMsg = messagesDiv.lastChild;
+                        const entityPanel = renderEntityDetailsPanel(data.referenced_entities);
+                        if (entityPanel) {
+                            const entityDiv = document.createElement('div');
+                            entityDiv.innerHTML = entityPanel;
+                            lastMsg.appendChild(entityDiv);
+                        }
+                    }
+                }
+
+                // Always highlight referenced nodes if available
+                if (data.referenced_nodes && data.referenced_nodes.length > 0) {
                     data.referenced_nodes.forEach(node => {
                         try {
                             if (state.highlightedNodes.size < 10) {
@@ -623,8 +1285,6 @@
                         }
                     });
                 }
-
-                showMessage('Assistant', responseText, false);
 
             } catch (error) {
                 console.error('Error:', error);

@@ -62,12 +62,12 @@ You should see:
 ```
 Loading JSONL data from ./sap-o2c-data...
 Building graph...
-INFO:     Uvicorn running on http://0.0.0.0:5552
+INFO:     Uvicorn running on http://0.0.0.0:5554
 ```
 
 ### Step 4: Open Browser
 
-Navigate to: **http://localhost:5552**
+Navigate to: **http://localhost:5554**
 
 ---
 
@@ -132,7 +132,7 @@ GROQ_API_KEY=your-api-key-here
 DATA_PATH=./sap-o2c-data
 
 # Server Configuration
-PORT=5552
+PORT=5554
 HOST=0.0.0.0
 
 # Logging

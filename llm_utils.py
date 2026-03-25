@@ -362,6 +362,210 @@ Reference specific numbers, orders, amounts, and entities from the results.
         
         return response_text, []
 
+async def create_structured_response(
+    user_query: str,
+    sql_query: str,
+    results: List[Dict],
+    graph: Optional[nx.DiGraph] = None
+) -> Dict[str, Any]:
+    """Create a structured response with insights, metrics, and data."""
+    
+    structured = {
+        "answer": "",
+        "insights": [],
+        "metrics": {},
+        "data": [],
+        "source": "SQL Query"
+    }
+    
+    # If no results
+    if not results:
+        structured["answer"] = "No results found for your query."
+        structured["insights"] = ["The query executed successfully but returned no matching records."]
+        return structured
+    
+    # Build the answer using LLM
+    results_summary = json.dumps(results[:10], indent=2)
+    
+    messages = [
+        {
+            "role": "system",
+            "content": """You are a business analyst creating structured insights from O2C data.
+Your task is to provide a brief, insightful summary of the data (1-2 sentences max).
+Focus on the most important finding."""
+        },
+        {
+            "role": "user",
+            "content": f"""Question: {user_query}
+
+Top Results:
+{results_summary}
+
+Provide 1-2 sentences summarizing the key finding or answer."""
+        }
+    ]
+    
+    try:
+        client = get_groq_client()
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            temperature=0.5,
+            max_tokens=200,
+        )
+        structured["answer"] = response.choices[0].message.content.strip()
+    except:
+        structured["answer"] = f"Found {len(results)} matching records."
+    
+    # Extract insights from results
+    insights = []
+    
+    # Count records
+    if len(results) == 1:
+        insights.append("1 record found matching your criteria")
+    else:
+        insights.append(f"{len(results)} records found")
+    
+    # Identify numeric columns and generate metrics
+    metrics = {}
+    for key, value in results[0].items():
+        if isinstance(value, (int, float)):
+            # Calculate aggregate for this column
+            try:
+                values = [r.get(key, 0) for r in results if r.get(key) is not None]
+                if values:
+                    total = sum(float(v) for v in values if isinstance(v, (int, float)))
+                    avg = total / len(values) if values else 0
+                    metrics[key] = f"${total:,.2f}" if 'amount' in key.lower() or 'payment' in key.lower() else f"{total:.0f}"
+                    
+                    # Add insight
+                    if total > 0:
+                        if 'amount' in key.lower() or 'payment' in key.lower():
+                            insights.append(f"Total {key}: ${total:,.2f}")
+                        else:
+                            insights.append(f"Total {key}: {int(total)}")
+            except:
+                pass
+    
+    # Prepare data for display (first 5 records, all columns)
+    data_display = []
+    for i, result in enumerate(results[:5]):
+        # Format result dictionary for display
+        formatted_row = {}
+        for key, value in result.items():
+            if value is not None:
+                if isinstance(value, float):
+                    formatted_row[key] = f"{value:.2f}"
+                else:
+                    formatted_row[key] = str(value)[:50]  # Truncate long strings
+        if formatted_row:
+            data_display.append(formatted_row)
+    
+    structured["insights"] = insights
+    structured["metrics"] = metrics
+    structured["data"] = data_display
+    
+    # Add referenced nodes
+    referenced_nodes = []
+    for result in results[:3]:
+        for key, value in result.items():
+            if value and isinstance(value, (str, int)):
+                referenced_nodes.append(str(value))
+    
+    return structured
+
+
+async def fetch_entity_details_with_relationships(
+    referenced_nodes: List[str],
+    graph: Optional[nx.DiGraph] = None
+) -> Dict[str, Any]:
+    """
+    Fetch full details of referenced entities including all their direct relationships.
+    
+    Args:
+        referenced_nodes: List of node IDs in format "EntityType:ID"
+        graph: NetworkX graph containing entities and relationships
+    
+    Returns:
+        Dictionary with detailed entity information including relationships
+    """
+    if not graph:
+        return {"entities": []}
+    
+    detailed_entities = []
+    
+    for node_id in referenced_nodes:
+        if not graph.has_node(node_id):
+            continue
+        
+        # Get all node attributes
+        node_data = dict(graph.nodes[node_id])
+        
+        # Prepare entity info
+        entity_info = {
+            "id": node_id,
+            "type": node_data.get("type", "Unknown"),
+            "entity_id": node_data.get("entity_id", ""),
+            "properties": {},
+            "inbound_relationships": [],
+            "outbound_relationships": []
+        }
+        
+        # Add all properties (excluding type and entity_id which we already have)
+        for key, value in node_data.items():
+            if key not in ["type", "entity_id"]:
+                # Format value for display
+                if isinstance(value, float):
+                    entity_info["properties"][key] = round(value, 2)
+                elif isinstance(value, bool):
+                    entity_info["properties"][key] = value
+                elif isinstance(value, str):
+                    # Truncate long strings to 100 chars
+                    entity_info["properties"][key] = value[:100] if len(value) > 100 else value
+                else:
+                    entity_info["properties"][key] = str(value)[:100]
+        
+        # Get incoming relationships (predecessors)
+        for pred in graph.predecessors(node_id):
+            edge_data = graph.get_edge_data(pred, node_id)
+            relationship = edge_data.get("relationship", "related") if edge_data else "related"
+            pred_type = graph.nodes[pred].get("type", "Unknown")
+            pred_id = graph.nodes[pred].get("entity_id", "")
+            
+            entity_info["inbound_relationships"].append({
+                "source_id": pred,
+                "source_type": pred_type,
+                "source_entity_id": pred_id,
+                "relationship": relationship,
+                "direction": "from"
+            })
+        
+        # Get outgoing relationships (successors)
+        for succ in graph.successors(node_id):
+            edge_data = graph.get_edge_data(node_id, succ)
+            relationship = edge_data.get("relationship", "related") if edge_data else "related"
+            succ_type = graph.nodes[succ].get("type", "Unknown")
+            succ_id = graph.nodes[succ].get("entity_id", "")
+            
+            entity_info["outbound_relationships"].append({
+                "target_id": succ,
+                "target_type": succ_type,
+                "target_entity_id": succ_id,
+                "relationship": relationship,
+                "direction": "to"
+            })
+        
+        detailed_entities.append(entity_info)
+    
+    return {
+        "entities": detailed_entities,
+        "total_entities": len(detailed_entities),
+        "total_relationships": sum(
+            len(e["inbound_relationships"]) + len(e["outbound_relationships"]) 
+            for e in detailed_entities
+        )
+    }
+
 # ============================================================================
 # GRAPH-BASED QUERY RESOLUTION (Multi-hop queries)
 # ============================================================================

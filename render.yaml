@@ -11,4 +11,4 @@ services:
       - key: DATA_PATH
         value: ./sap-o2c-data
       - key: GROQ_API_KEY
-        fromDatabase: false
+        sync: false

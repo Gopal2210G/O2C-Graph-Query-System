@@ -18,6 +18,30 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+# Simple query cache to reduce token usage (avoid hitting Groq API rate limits)
+import hashlib
+query_cache = {}
+MAX_CACHE_SIZE = 100  # Limit cache to 100 queries
+
+def get_cache_key(query: str) -> str:
+    """Generate cache key from query string."""
+    return hashlib.md5(query.lower().strip().encode()).hexdigest()
+
+def get_cached_response(query: str) -> Optional[Dict[str, Any]]:
+    """Get response from cache if available."""
+    cache_key = get_cache_key(query)
+    return query_cache.get(cache_key)
+
+def cache_response(query: str, response: Any) -> None:
+    """Cache a response."""
+    if len(query_cache) >= MAX_CACHE_SIZE:
+        # Remove oldest entry (simple FIFO)
+        first_key = next(iter(query_cache))
+        del query_cache[first_key]
+    
+    cache_key = get_cache_key(query)
+    query_cache[cache_key] = response
+
 # Initialize FastAPI app
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -422,6 +446,12 @@ async def chat(request: ChatRequest):
     
     user_query = request.user_query
     
+    # Check cache first to avoid unnecessary API calls
+    cached_response = get_cached_response(user_query)
+    if cached_response is not None:
+        print(f"Cache hit for query: {user_query}")
+        return cached_response
+    
     # Import LLM utilities
     from llm_utils import (
         generate_sql_from_query, execute_query_safely, synthesize_response,
@@ -432,11 +462,13 @@ async def chat(request: ChatRequest):
     try:
         # Step 1: Check if query is in scope
         if not is_query_in_scope(user_query):
-            return ChatResponse(
+            response = ChatResponse(
                 response="I'm designed to answer questions about the Order-to-Cash process, including orders, deliveries, billing, payments, customers, and products. Please ask about topics related to your O2C data.",
                 referenced_nodes=[],
                 query_type="out_of_scope"
             )
+            cache_response(user_query, response)
+            return response
         
         # Step 2: Check if query requires graph traversal (multi-hop)
         if detect_query_requires_graph(user_query):
@@ -470,13 +502,15 @@ async def chat(request: ChatRequest):
                     global_state.graph
                 )
                 
-                return ChatResponse(
+                response = ChatResponse(
                     response=response_text,
                     referenced_nodes=referenced_nodes,
                     query_type="graph_traversal",
                     structured_response=structured_resp,
                     referenced_entities=entity_details
                 )
+                cache_response(user_query, response)
+                return response
         
         # Step 3: Try SQL-based query generation
         print(f"Processing query with LLM: {user_query}")
@@ -517,13 +551,15 @@ async def chat(request: ChatRequest):
                 global_state.graph
             )
             
-            return ChatResponse(
+            response = ChatResponse(
                 response=response_text,
                 referenced_nodes=referenced_nodes,
                 query_type="sql",
                 structured_response=structured_resp,
                 referenced_entities=entity_details
             )
+            cache_response(user_query, response)
+            return response
         
         except Exception as sql_error:
             print(f"SQL query failed: {sql_error}")
@@ -560,21 +596,25 @@ async def chat(request: ChatRequest):
                         global_state.graph
                     )
                     
-                    return ChatResponse(
+                    response = ChatResponse(
                         response=response_text,
                         referenced_nodes=referenced_nodes,
                         query_type="graph_fallback",
                         structured_response=structured_resp,
                         referenced_entities=entity_details
                     )
+                    cache_response(user_query, response)
+                    return response
             
             # If graph fallback also fails, return user-friendly error instead of 500
             print(f"All query methods failed, returning graceful error")
-            return ChatResponse(
+            error_response = ChatResponse(
                 response=f"I encountered an issue processing your query. The system couldn't generate proper SQL or find results through graph analysis. Please try rephrasing your question or try a simpler query.",
                 referenced_nodes=[],
                 query_type="error"
             )
+            cache_response(user_query, error_response)
+            return error_response
     
     except Exception as e:
         print(f"Error processing query: {e}")

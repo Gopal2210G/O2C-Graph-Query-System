@@ -7,7 +7,7 @@ services:
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.6
       - key: DATA_PATH
         value: ./sap-o2c-data
       - key: GROQ_API_KEY

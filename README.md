@@ -4,11 +4,10 @@ A production-ready system for exploring SAP Order-to-Cash business processes thr
 
 ![Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Latest-green)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 
 ---
 
-## 🎯 What is This?
+## What is This?
 
 This system provides:
 - **Interactive Graph Visualization** - Explore 16+ entity types and their relationships
@@ -121,7 +120,7 @@ GET /graph               POST /chat
 
 ---
 
-## 🔧 Configuration
+##  Configuration
 
 Create a `.env` file (or use `.env.example` as template):
 
@@ -142,7 +141,7 @@ LOG_LEVEL=INFO
 
 ---
 
-## 💬 Query Examples
+##  Query Examples
 
 ### Get Started
 ```
@@ -170,7 +169,7 @@ LOG_LEVEL=INFO
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 Dodge/
@@ -189,7 +188,7 @@ Dodge/
 
 ---
 
-## 🚀 Endpoints
+##  Endpoints
 
 | Method | Endpoint | Purpose |
 |--------|----------|---------|
@@ -217,7 +216,7 @@ Dodge/
 
 ---
 
-## 🔒 Security & Validation
+##  Security & Validation
 
 ✅ **Query Validation**
 - Only SELECT statements
@@ -237,7 +236,7 @@ Dodge/
 
 ---
 
-## 📋 Verification
+##  Verification
 
 All system features have been verified:
 - ✅ Out-of-scope query handling (200 OK responses)
@@ -251,7 +250,7 @@ See `DOCUMENTATION.md` for detailed verification results.
 
 ---
 
-## 🤝 Support & Documentation
+##  Support & Documentation
 
 - **Quick Start**: See "Quick Start" section above
 - **Full Documentation**: See `DOCUMENTATION.md`
@@ -260,18 +259,17 @@ See `DOCUMENTATION.md` for detailed verification results.
 
 ---
 
-## 📝 License
+##  License
 
 Provided as-is for educational and commercial use.
 
 ---
 
-## 🎉 Next Steps
 
-1. ✅ Follow Quick Start above to get running
-2. 💡 Try the example queries
-3. 📚 Read `DOCUMENTATION.md` for advanced usage
-4. 🔍 Explore the graph visualization to understand your data
-5. 🚀 Deploy to production (see DOCUMENTATION.md → Deployment)
+1. Follow Quick Start above to get running
+2. Try the example queries
+3. Read `DOCUMENTATION.md` for advanced usage
+4. Explore the graph visualization to understand your data
+5. Deploy to production (see DOCUMENTATION.md → Deployment)
 
 **Enjoy exploring your Order-to-Cash data!**

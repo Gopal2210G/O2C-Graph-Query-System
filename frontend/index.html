@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order-to-Cash Graph System</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            height: 100vh;
+            gap: 2px;
+            background: #ddd;
+        }
+
+        .graph-container {
+            background: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #ddd;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-height: 0;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 85%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .message.assistant .message-content {
+            background: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 8px;
+            background: #f9f9f9;
+            flex-shrink: 0;
+            border-left: 1px solid #ddd;
+        }
+
+        .chat-input-area textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 13px;
+            resize: none;
+            max-height: 80px;
+        }
+
+        .chat-input-area button {
+            padding: 10px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .chat-input-area button:hover {
+            background: #764ba2;
+        }
+
+        .chat-input-area button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Graph styles */
+        #graph {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            fill: #667eea;
+            stroke: #333;
+            stroke-width: 1.5px;
+            cursor: pointer;
+            transition: fill 0.3s, r 0.3s;
+        }
+
+        .node:hover {
+            fill: #764ba2;
+            r: 8;
+        }
+
+        .node.highlighted {
+            fill: #ff6b6b;
+            stroke: #c92a2a;
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.5));
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.6;
+            stroke-width: 1.5px;
+        }
+
+        .link.highlighted {
+            stroke: #ff6b6b;
+            stroke-opacity: 1;
+            stroke-width: 3px;
+        }
+
+        .node-label {
+            font-size: 11px;
+            pointer-events: none;
+            text-anchor: middle;
+            fill: #fff;
+            font-weight: 600;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            max-width: 250px;
+            word-wrap: break-word;
+        }
+
+        .controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .controls button {
+            padding: 8px 12px;
+            margin: 4px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background: #764ba2;
+        }
+
+        .controls button.active {
+            background: #ff6b6b;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+
+        .stats {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .stats-item {
+            margin: 4px 0;
+            color: #666;
+        }
+
+        .ref-badge {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-right: 4px;
+            margin-top: 4px;
+        }
+
+        .loading {
+            display: inline-block;
+            margin-left: 8px;
+            color: #999;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-container">
+            <svg id="graph"></svg>
+            <div class="controls">
+                <button id="zoomInBtn" title="Zoom In">+ Zoom</button>
+                <button id="zoomOutBtn" title="Zoom Out">- Zoom</button>
+                <button id="resetBtn" title="Reset View">Reset</button>
+                <button id="toggleLabelsBtn" title="Toggle Labels">Labels</button>
+            </div>
+            <div class="stats">
+                <div class="stats-item"><strong>Graph Stats</strong></div>
+                <div class="stats-item">Nodes: <span id="nodeCount">0</span></div>
+                <div class="stats-item">Edges: <span id="edgeCount">0</span></div>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #667eea;"></div>
+                    <span>Entity</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: #ff6b6b;"></div>
+                    <span>Referenced</span>
+                </div>
+                <div class="legend-item">
+                    <span style="font-size: 11px; color: #999;">Lines = Relationships</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">O2C Query Assistant</div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+                <textarea id="chatInput" placeholder="Ask about orders, deliveries, billing..." rows="3"></textarea>
+                <button id="sendBtn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip" style="display: none;"></div>
+
+    <script>
+        // ============================================================================
+        // Global State
+        // ============================================================================
+        const state = {
+            graphData: null,
+            simulation: null,
+            svg: null,
+            g: null,
+            highlightedNodes: new Set(),
+            showLabels: true,
+            zoom: null,
+        };
+
+        const API_BASE = window.location.origin;
+
+        // ============================================================================
+        // Graph Visualization
+        // ============================================================================
+
+        async function initializeGraph() {
+            try {
+                const response = await fetch(`${API_BASE}/graph`);
+                state.graphData = await response.json();
+
+                renderGraph(state.graphData);
+                updateStats();
+            } catch (error) {
+                console.error('Error loading graph:', error);
+                showMessage('System', 'Failed to load graph data', false);
+            }
+        }
+
+        function renderGraph(data) {
+            const width = document.querySelector('.graph-container').clientWidth;
+            const height = document.querySelector('.graph-container').clientHeight;
+
+            // Clear existing
+            d3.select('#graph').selectAll('*').remove();
+
+            const svg = d3.select('#graph')
+                .attr('width', width)
+                .attr('height', height);
+
+            state.svg = svg;
+
+            // Add zoom
+            state.zoom = d3.zoom().on('zoom', (event) => {
+                state.g.attr('transform', event.transform);
+            });
+
+            svg.call(state.zoom);
+
+            // Main group
+            state.g = svg.append('g');
+
+            // Force simulation
+            state.simulation = d3.forceSimulation(data.nodes)
+                .force('link', d3.forceLink(data.edges)
+                    .id(d => d.id)
+                    .distance(100)
+                    .strength(0.5))
+                .force('charge', d3.forceManyBody().strength(-200))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(25));
+
+            // Links
+            const links = state.g.selectAll('.link')
+                .data(data.edges)
+                .enter()
+                .append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', d => Math.sqrt(1));
+
+            // Nodes
+            const nodes = state.g.selectAll('.node')
+                .data(data.nodes)
+                .enter()
+                .append('circle')
+                .attr('class', 'node')
+                .attr('r', 6)
+                .attr('id', d => `node-${d.id}`)
+                .on('click', (event, d) => {
+                    event.stopPropagation();
+                    highlightNode(d.id);
+                    showNodeDetails(d.id);
+                })
+                .on('mouseover', (event, d) => {
+                    showTooltip(event, d.label + ' (' + d.type + ')');
+                })
+                .on('mouseout', hideTooltip)
+                .call(d3.drag()
+                    .on('start', dragStarted)
+                    .on('drag', dragged)
+                    .on('end', dragEnded));
+
+            // Labels
+            const labels = state.g.selectAll('.node-label')
+                .data(data.nodes)
+                .enter()
+                .append('text')
+                .attr('class', 'node-label')
+                .text(d => d.type.substring(0, 3))
+                .attr('dy', -4);
+
+            state.simulation.on('tick', () => {
+                links
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+
+                nodes
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y);
+            });
+
+            // SVG click to deselect
+            svg.on('click', () => {
+                clearHighlight();
+            });
+
+            // Setup controls
+            document.getElementById('zoomInBtn').addEventListener('click', () => {
+                svg.transition().duration(750).call(state.zoom.scaleBy, 1.3);
+            });
+
+            document.getElementById('zoomOutBtn').addEventListener('click', () => {
+                svg.transition().duration(750).call(state.zoom.scaleBy, 0.75);
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                svg.transition().duration(750).call(state.zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2));
+            });
+
+            document.getElementById('toggleLabelsBtn').addEventListener('click', () => {
+                state.showLabels = !state.showLabels;
+                labels.style('visibility', state.showLabels ? 'visible' : 'hidden');
+            });
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) state.simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragEnded(event, d) {
+            if (!event.active) state.simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function highlightNode(nodeId) {
+            clearHighlight();
+            state.highlightedNodes.add(nodeId);
+            document.getElementById(`node-${nodeId}`).classList.add('highlighted');
+        }
+
+        function clearHighlight() {
+            state.highlightedNodes.forEach(id => {
+                const elem = document.getElementById(`node-${id}`);
+                if (elem) elem.classList.remove('highlighted');
+            });
+            state.highlightedNodes.clear();
+        }
+
+        function updateStats() {
+            if (state.graphData) {
+                document.getElementById('nodeCount').textContent = state.graphData.nodes.length;
+                document.getElementById('edgeCount').textContent = state.graphData.edges.length;
+            }
+        }
+
+        function showTooltip(event, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.display = 'block';
+            tooltip.style.left = (event.pageX + 10) + 'px';
+            tooltip.style.top = (event.pageY + 10) + 'px';
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').style.display = 'none';
+        }
+
+        async function showNodeDetails(nodeId) {
+            const [type, id] = nodeId.split(':');
+            try {
+                // Could fetch more details here
+                showMessage('System', `Selected: ${nodeId}`, false);
+            } catch (error) {
+                console.error('Error fetching node details:', error);
+            }
+        }
+
+        // ============================================================================
+        // Chat Interface
+        // ============================================================================
+
+        function showMessage(sender, content, isUser = false) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const msgEl = document.createElement('div');
+            msgEl.className = `message ${isUser ? 'user' : 'assistant'}`;
+
+            const contentEl = document.createElement('div');
+            contentEl.className = 'message-content';
+            contentEl.innerHTML = content.replace(/\n/g, '<br>');
+
+            msgEl.appendChild(contentEl);
+            messagesDiv.appendChild(msgEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const button = document.getElementById('sendBtn');
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner"></span>';
+
+            showMessage('You', message, true);
+            input.value = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_query: message,
+                        messages: []
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API error: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Format response with references
+                let responseText = data.response;
+                if (data.referenced_nodes && data.referenced_nodes.length > 0) {
+                    responseText += '<br><br><strong>Referenced:</strong><br>';
+                    data.referenced_nodes.forEach(node => {
+                        responseText += `<span class="ref-badge">${node}</span>`;
+                    });
+
+                    // Highlight nodes in graph
+                    data.referenced_nodes.forEach(node => {
+                        try {
+                            if (state.highlightedNodes.size < 10) {
+                                highlightNode(node);
+                            }
+                        } catch (e) {
+                            // Ignore invalid node IDs
+                        }
+                    });
+                }
+
+                showMessage('Assistant', responseText, false);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('System', 'Error processing query: ' + error.message, false);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = 'Send';
+            }
+        }
+
+        // ============================================================================
+        // Initialization
+        // ============================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check API health
+            fetch(`${API_BASE}/health`)
+                .then(r => r.json())
+                .then(data => {
+                    console.log('API Health:', data);
+                    showMessage('System', `System initialized. Graph ready with ${data.graph_nodes} nodes.`, false);
+                    initializeGraph();
+                })
+                .catch(err => {
+                    console.error('Health check failed:', err);
+                    showMessage('System', 'Failed to connect to backend API', false);
+                });
+
+            // Enter to send (Shift+Enter for new line)
+            document.getElementById('chatInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // Welcome message
+            setTimeout(() => {
+                showMessage('Assistant', 'Welcome to the Order-to-Cash Graph System! 👋<br><br>Ask me about:<br>• Orders and deliveries<br>• Billing and payments<br>• Customer transactions<br>• Product flows<br>• Data tracing<br><br>Try: "Which products have highest billing?"', false);
+            }, 500);
+        });
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            if (state.graphData) {
+                renderGraph(state.graphData);
+            }
+        });
+    </script>
+</body>
+</html>
